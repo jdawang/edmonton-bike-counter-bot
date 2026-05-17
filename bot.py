@@ -35,14 +35,15 @@ def fetch_bike_counts(target_date):
     key_secret = os.environ.get("SOCRATA_KEY_SECRET")
     auth = (key_id, key_secret) if key_id and key_secret else None
 
+    query = (
+        "SELECT `counter_location_description`, sum(`total_cyclist_count`) AS `total_cyclist_count`"
+        f" WHERE `log_timestamp` >= '{start}' AND `log_timestamp` < '{end}'"
+        " GROUP BY `counter_location_description`"
+        " LIMIT 200"
+    )
     resp = requests.get(
-        "https://data.edmonton.ca/resource/tq23-qn4m.json",
-        params={
-            "$select": "counter_location_description, sum(total_cyclist_count) as total_cyclist_count",
-            "$where": f"log_timestamp >= '{start}' AND log_timestamp < '{end}'",
-            "$group": "counter_location_description",
-            "$limit": 200,
-        },
+        "https://data.edmonton.ca/api/v3/views/tq23-qn4m/query.json",
+        params={"query": query},
         auth=auth,
         timeout=30,
     )

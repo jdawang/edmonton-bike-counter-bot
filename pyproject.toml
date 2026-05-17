@@ -12,6 +12,9 @@ classifiers = [
 dependencies = [
   "atproto>=0.0.65",
   "click>=8.3.3",
+  "lets-plot>=4.5",
+  "numpy>=2",
+  "polars>=1",
   "python-dotenv>=1.2.2",
   "requests>=2.34.2",
 ]

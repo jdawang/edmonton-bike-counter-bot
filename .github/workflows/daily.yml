@@ -1,0 +1,25 @@
+name: Daily bike count post
+
+on:
+  schedule:
+    - cron: "0 13 * * *"  # 1 PM UTC = 7 AM MDT
+  workflow_dispatch:
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Post to BlueSky
+        env:
+          BSKY_HANDLE: ${{ secrets.BSKY_HANDLE }}
+          BSKY_APP_PASSWORD: ${{ secrets.BSKY_APP_PASSWORD }}
+          SOCRATA_KEY_ID: ${{ secrets.SOCRATA_KEY_ID }}
+          SOCRATA_KEY_SECRET: ${{ secrets.SOCRATA_KEY_SECRET }}
+        run: uv run python bot.py

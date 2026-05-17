@@ -98,9 +98,9 @@ def format_posts(target_date, total, counts, weather):
         weather_str = f"↑{weather['temp_high']:.1f}°C ↓{weather['temp_low']:.1f}°C"
         if precip_parts:
             weather_str += ", " + ", ".join(precip_parts)
-        header = f"{day_str}, {weather_str}\nTotal: {total:,}"
+        header = f"{day_str}, {weather_str}\n\nTotal: {total:,}\n"
     else:
-        header = f"{day_str}\nTotal: {total:,}"
+        header = f"{day_str}\n\nTotal: {total:,}\n"
 
     posts = []
     current = header

@@ -165,7 +165,7 @@ def fetch_weather(target_date):
 
 
 def format_posts(target_date, total, counts, weather):
-    day_str = target_date.strftime("%A, %-d %B")
+    day_str = target_date.strftime("%A, %B %-d")
     if weather is not None:
         precip_parts = []
         if weather["rain"] > 0:

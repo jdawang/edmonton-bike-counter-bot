@@ -1,3 +1,4 @@
+import io
 import os
 import re
 import sys
@@ -5,9 +6,19 @@ from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import click
+import polars as pl
 import requests
 from atproto import Client, models
 from dotenv import load_dotenv
+from lets_plot import (
+    aes,
+    geom_point,
+    geom_smooth,
+    ggplot,
+    labs,
+    scale_x_datetime,
+    theme_minimal,
+)
 
 EDMONTON_TZ = ZoneInfo("America/Edmonton")
 
@@ -91,17 +102,6 @@ def fetch_daily_totals(start_date, end_date):
 
 
 def generate_trend_chart(this_year_data, last_year_data, target_date):
-    import io
-    import polars as pl
-    from lets_plot import (
-        ggplot,
-        aes,
-        geom_point,
-        geom_smooth,
-        scale_x_datetime,
-        labs,
-        theme_minimal,
-    )
 
     def to_df(data, year_label):
         return pl.DataFrame(

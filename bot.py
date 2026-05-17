@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -116,6 +117,23 @@ def format_posts(target_date, total, counts, weather):
     return posts
 
 
+def build_facets(text):
+    facets = []
+    for match in re.finditer(r"#(\w+)", text):
+        byte_start = len(text[: match.start()].encode("utf-8"))
+        byte_end = len(text[: match.end()].encode("utf-8"))
+        facets.append(
+            models.AppBskyRichtextFacet.Main(
+                features=[models.AppBskyRichtextFacet.Tag(tag=match.group(1))],
+                index=models.AppBskyRichtextFacet.ByteSlice(
+                    byte_start=byte_start,
+                    byte_end=byte_end,
+                ),
+            )
+        )
+    return facets or None
+
+
 def post_thread(posts, handle, password):
 
     client = Client()
@@ -125,13 +143,14 @@ def post_thread(posts, handle, password):
     parent_ref = None
 
     for i, text in enumerate(posts):
+        facets = build_facets(text)
         if i == 0:
-            response = client.send_post(text=text)
+            response = client.send_post(text=text, facets=facets)
             root_ref = models.create_strong_ref(response)
             parent_ref = root_ref
         else:
             reply_to = models.AppBskyFeedPost.ReplyRef(root=root_ref, parent=parent_ref)
-            response = client.send_post(text=text, reply_to=reply_to)
+            response = client.send_post(text=text, reply_to=reply_to, facets=facets)
             parent_ref = models.create_strong_ref(response)
 
 

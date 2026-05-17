@@ -52,9 +52,8 @@ def fetch_bike_counts(target_date):
         location = row["counter_location_description"]
         if location in EXCLUDED_LOCATIONS:
             continue
-        count = int(row.get("total_cyclist_count", 0) or 0)
-        if count > 0:
-            counts.append((location, count))
+        count = int(float(row.get("total_cyclist_count", 0)) or 0)
+        counts.append((location, count))
 
     counts.sort(key=lambda x: x[1], reverse=True)
     return counts

@@ -9,6 +9,8 @@ import click
 import polars as pl
 import requests
 from atproto import Client, models
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from dotenv import load_dotenv
 from lets_plot import (
     aes,
@@ -34,6 +36,16 @@ EXCLUDED_LOCATIONS = {
 
 BSKY_POST_LIMIT = 300
 
+_retry = Retry(
+    total=3,
+    backoff_factor=5,
+    status_forcelist=[500, 502, 503, 504],
+    allowed_methods=["GET"],
+)
+SESSION = requests.Session()
+SESSION.mount("https://", HTTPAdapter(max_retries=_retry))
+SESSION.mount("http://", HTTPAdapter(max_retries=_retry))
+
 
 def get_yesterday():
     return (datetime.now(EDMONTON_TZ) - timedelta(days=1)).date()
@@ -52,11 +64,11 @@ def fetch_bike_counts(target_date):
         " GROUP BY `counter_location_description`"
         " LIMIT 200"
     )
-    resp = requests.get(
+    resp = SESSION.get(
         "https://data.edmonton.ca/api/v3/views/tq23-qn4m/query.json",
         params={"query": query},
         auth=auth,
-        timeout=30,
+        timeout=120,
     )
     resp.raise_for_status()
 
@@ -86,11 +98,11 @@ def fetch_daily_totals(start_date, end_date):
     key_id = os.environ.get("SOCRATA_KEY_ID")
     key_secret = os.environ.get("SOCRATA_KEY_SECRET")
     auth = (key_id, key_secret) if key_id and key_secret else None
-    resp = requests.get(
+    resp = SESSION.get(
         "https://data.edmonton.ca/api/v3/views/tq23-qn4m/query.json",
         params={"query": query},
         auth=auth,
-        timeout=60,
+        timeout=120,
     )
     resp.raise_for_status()
     result = []
@@ -140,7 +152,7 @@ def generate_trend_chart(this_year_data, last_year_data, target_date):
 def fetch_weather(target_date):
     date_str = target_date.strftime("%Y-%m-%d")
     try:
-        resp = requests.get(
+        resp = SESSION.get(
             "https://archive-api.open-meteo.com/v1/archive",
             params={
                 "latitude": 53.5461,

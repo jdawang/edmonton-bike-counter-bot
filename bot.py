@@ -283,12 +283,15 @@ def main(dry_run, target_date):
     total = sum(c for _, c in counts)
     click.echo(f"Found {len(counts)} locations, total {total:,} cyclists")
 
+    click.echo(f"Fetching weather data for {target_date}...")
     weather = fetch_weather(target_date)
     if weather is not None:
         click.echo(
             f"Weather: ↑{weather['temp_high']:.1f}°C ↓{weather['temp_low']:.1f}°C"
             f", {weather['rain']:.1f}mm rain, {weather['snow']:.1f}cm snow"
         )
+    else:
+        click.echo("No weather data found")
 
     click.echo("Fetching year-over-year historical totals for chart...")
     this_year_data = fetch_daily_totals(
